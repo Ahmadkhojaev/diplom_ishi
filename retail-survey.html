@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Retail Mobil Dastur — Discovery So'rovnomasi</title>
+<style>
+  :root {
+    --bg: #0f1729;
+    --bg-soft: #16203a;
+    --card: #ffffff;
+    --ink: #1b2436;
+    --muted: #667085;
+    --line: #e4e8f0;
+    --brand: #4f46e5;
+    --brand-soft: #eef2ff;
+    --brand-ink: #3730a3;
+    --ok: #16a34a;
+    --shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background: linear-gradient(180deg, var(--bg) 0%, #1d2746 100%);
+    color: var(--ink);
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ---- Header ---- */
+  header {
+    color: #fff;
+    padding: 40px 20px 28px;
+    text-align: center;
+  }
+  header .badge {
+    display: inline-block;
+    background: rgba(255,255,255,0.12);
+    border: 1px solid rgba(255,255,255,0.18);
+    padding: 6px 14px;
+    border-radius: 999px;
+    font-size: 13px;
+    letter-spacing: .3px;
+    margin-bottom: 16px;
+  }
+  header h1 { font-size: 30px; margin: 0 0 8px; font-weight: 800; letter-spacing: -0.5px; }
+  header p { margin: 0 auto; max-width: 640px; color: #c3cbe0; font-size: 15px; }
+
+  /* ---- Progress ---- */
+  .progress-wrap {
+    position: sticky; top: 0; z-index: 20;
+    background: rgba(15,23,41,0.85);
+    backdrop-filter: blur(8px);
+    padding: 12px 20px;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+  }
+  .progress-inner { max-width: 820px; margin: 0 auto; display: flex; align-items: center; gap: 14px; }
+  .progress-track { flex: 1; height: 8px; background: rgba(255,255,255,0.14); border-radius: 999px; overflow: hidden; }
+  .progress-bar { height: 100%; width: 0%; background: linear-gradient(90deg, #6366f1, #22d3ee); transition: width .3s ease; }
+  .progress-text { color: #cdd5ea; font-size: 13px; font-variant-numeric: tabular-nums; white-space: nowrap; }
+
+  /* ---- Layout ---- */
+  main { max-width: 820px; margin: 28px auto 60px; padding: 0 20px; }
+
+  .section {
+    background: var(--card);
+    border-radius: 16px;
+    box-shadow: var(--shadow);
+    margin-bottom: 22px;
+    overflow: hidden;
+  }
+  .section-head {
+    display: flex; align-items: center; gap: 14px;
+    padding: 20px 24px;
+    border-bottom: 1px solid var(--line);
+    background: linear-gradient(180deg, #fbfcff, #f6f8fd);
+  }
+  .section-num {
+    flex: 0 0 auto;
+    width: 38px; height: 38px;
+    border-radius: 10px;
+    background: var(--brand-soft);
+    color: var(--brand-ink);
+    display: grid; place-items: center;
+    font-weight: 800; font-size: 16px;
+  }
+  .section-head h2 { font-size: 19px; margin: 0; }
+  .section-head p { margin: 2px 0 0; font-size: 13px; color: var(--muted); }
+  .section-body { padding: 8px 24px 22px; }
+
+  .q { padding: 16px 0; border-bottom: 1px dashed var(--line); }
+  .q:last-child { border-bottom: none; }
+  .q > label.q-label, .q > .q-label {
+    display: block; font-weight: 600; font-size: 15px; margin-bottom: 10px; color: var(--ink);
+  }
+  .q .hint { font-weight: 400; color: var(--muted); font-size: 13px; display: block; margin-top: 2px; }
+
+  input[type="text"], input[type="number"], input[type="email"], textarea, select {
+    width: 100%;
+    border: 1.5px solid var(--line);
+    border-radius: 10px;
+    padding: 11px 13px;
+    font-size: 15px;
+    font-family: inherit;
+    color: var(--ink);
+    background: #fff;
+    transition: border-color .15s, box-shadow .15s;
+  }
+  textarea { min-height: 84px; resize: vertical; }
+  input:focus, textarea:focus, select:focus {
+    outline: none; border-color: var(--brand); box-shadow: 0 0 0 4px var(--brand-soft);
+  }
+
+  .options { display: grid; gap: 8px; }
+  .options.grid2 { grid-template-columns: 1fr 1fr; }
+  @media (max-width: 560px){ .options.grid2 { grid-template-columns: 1fr; } }
+  .opt {
+    display: flex; align-items: center; gap: 10px;
+    border: 1.5px solid var(--line);
+    border-radius: 10px;
+    padding: 10px 13px;
+    cursor: pointer;
+    font-size: 14.5px;
+    transition: all .15s;
+  }
+  .opt:hover { border-color: #c7cdfb; background: #fafbff; }
+  .opt input { width: 18px; height: 18px; accent-color: var(--brand); margin: 0; flex: 0 0 auto; }
+  .opt input:checked + span { font-weight: 600; color: var(--brand-ink); }
+  .opt:has(input:checked) { border-color: var(--brand); background: var(--brand-soft); }
+
+  /* ---- Footer / actions ---- */
+  .actions {
+    position: sticky; bottom: 0;
+    background: rgba(255,255,255,0.96);
+    backdrop-filter: blur(8px);
+    border-top: 1px solid var(--line);
+    padding: 14px 20px;
+    display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;
+    box-shadow: 0 -8px 24px rgba(15,23,42,0.06);
+  }
+  button {
+    font-family: inherit; font-size: 15px; font-weight: 600;
+    border: none; border-radius: 10px; padding: 12px 20px; cursor: pointer;
+    transition: transform .1s, opacity .15s, background .15s;
+  }
+  button:active { transform: translateY(1px); }
+  .btn-primary { background: var(--brand); color: #fff; }
+  .btn-primary:hover { background: #4338ca; }
+  .btn-ghost { background: #f1f3f9; color: var(--ink); }
+  .btn-ghost:hover { background: #e6e9f2; }
+  .btn-ok { background: var(--ok); color: #fff; }
+
+  .save-note { text-align: center; font-size: 12.5px; color: #c3cbe0; padding: 0 20px 30px; }
+
+  /* ---- Print ---- */
+  @media print {
+    body { background: #fff; }
+    .progress-wrap, .actions, header .badge, .save-note { display: none !important; }
+    header { color: #000; padding: 10px 0; }
+    header p { color: #444; }
+    .section { box-shadow: none; border: 1px solid #ccc; break-inside: avoid; }
+    .section-head { background: #f3f3f3; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="badge">Discovery / Requirements uchrashuvi</div>
+  <h1>Retail Mobil Dastur — So'rovnoma</h1>
+  <p>Loyiha maqsadi, foydalanuvchilar va talablarni aniq tushunish uchun savollar. Iltimos, imkon qadar batafsil javob bering — bo'sh qoldirgan joylaringizni uchrashuvda birga to'ldiramiz.</p>
+</header>
+
+<div class="progress-wrap">
+  <div class="progress-inner">
+    <div class="progress-track"><div class="progress-bar" id="progressBar"></div></div>
+    <div class="progress-text"><span id="progressCount">0</span> / <span id="progressTotal">0</span> javob</div>
+  </div>
+</div>
+
+<main>
+  <form id="surveyForm">
+    <!-- Sections injected by JS -->
+  </form>
+  <p class="save-note">Javoblaringiz brauzeringizda avtomatik saqlanadi (localStorage). Tugatgach pastdagi tugmalar orqali yuklab oling.</p>
+</main>
+
+<div class="actions">
+  <button type="button" class="btn-primary" id="btnExport">⬇︎ Javoblarni yuklab olish (.md)</button>
+  <button type="button" class="btn-ghost" id="btnJson">{ } JSON yuklab olish</button>
+  <button type="button" class="btn-ghost" id="btnPrint">🖨 Chop etish / PDF</button>
+  <button type="button" class="btn-ghost" id="btnReset">↺ Tozalash</button>
+</div>
+
+<script>
+/* ============================================================
+   SAVOLLAR TO'PLAMI — kategoriyalar bo'yicha
+   type: text | textarea | number | radio | checkbox
+   ============================================================ */
+const SURVEY = [
+  {
+    title: "Kompaniya va biznes konteksti",
+    desc: "Biznesingizni va hozirgi holatni tushunib olamiz.",
+    questions: [
+      { id: "company_name", type: "text", label: "Kompaniya nomi" },
+      { id: "retail_type", type: "radio", label: "Retail yo'nalishingiz qaysi?",
+        options: ["Oziq-ovqat / supermarket", "Kiyim-kechak / moda", "Elektronika / maishiy texnika", "Dorixona / salomatlik", "Mebel / uy-ro'zg'or", "Qurilish mollari", "Boshqa (izohda yozing)"] },
+      { id: "stores_count", type: "text", label: "Do'kon / filiallar soni va joylashuvi", hint: "Masalan: 12 ta filial, Toshkent va Samarqand" },
+      { id: "employees", type: "text", label: "Hodimlar soni va asosiy bo'limlar", hint: "100+ hodim — qaysi bo'limlar: savdo, ombor, HR, marketing?" },
+      { id: "sales_channels", type: "checkbox", label: "Hozir qaysi savdo kanallaridan foydalanasiz?",
+        options: ["Faqat offline do'kon", "O'z veb-sayti", "Telegram / Instagram", "Marketplace (Uzum, Yandex...)", "Telefon orqali buyurtma"] },
+    ]
+  },
+  {
+    title: "Loyiha maqsadi va muammolar",
+    desc: "Eng muhim qism — nima uchun va nimaga erishmoqchisiz.",
+    questions: [
+      { id: "idea_origin", type: "textarea", label: "Mobil dastur g'oyasi qanday paydo bo'ldi? Qaysi ehtiyojdan kelib chiqdi?" },
+      { id: "pain_points", type: "textarea", label: "Hozir qanday asosiy muammo yoki noqulayliklarga duch kelyapsiz?", hint: "Masalan: qoldiqlarni kuzatish qiyin, mijozlar qaytib kelmaydi, hisobotlar qo'lda yig'iladi" },
+      { id: "main_goal", type: "radio", label: "Dasturning ASOSIY maqsadi nima?",
+        options: ["Savdoni / daromadni oshirish", "Mijozlarni ushlab turish (loyalty)", "Ichki jarayonlarni avtomatlashtirish", "Hodimlar ish unumini oshirish", "Brend / imidj", "Boshqa"] },
+      { id: "kpi", type: "textarea", label: "Muvaffaqiyatni qanday o'lchaymiz? (KPI)", hint: "Masalan: oylik buyurtmalar soni, takroriy xaridlar %, vaqt tejash, xatolar kamayishi" },
+      { id: "competitors", type: "textarea", label: "Raqobatchilarda yoki yoqtirgan kompaniyalarda shunga o'xshash yechim bormi?" },
+    ]
+  },
+  {
+    title: "Foydalanuvchilar — dastur kim uchun?",
+    desc: "Auditoriyani aniqlaymiz: mijozlar, hodimlar yoki ikkalasi.",
+    questions: [
+      { id: "audience", type: "checkbox", label: "Dastur kim uchun mo'ljallangan?",
+        options: ["Mijozlar (B2C)", "Hodimlar / ichki foydalanish (B2E)", "Yetkazib beruvchilar / hamkorlar (B2B)"] },
+      { id: "employee_roles", type: "checkbox", label: "Agar hodimlar uchun bo'lsa — qaysi rollar foydalanadi?",
+        options: ["Kassir / sotuvchi", "Ombor xodimi", "Filial menejeri", "Yuqori rahbariyat", "Kuryer / yetkazib beruvchi", "HR / buxgalteriya"] },
+      { id: "customer_audience", type: "textarea", label: "Agar mijozlar uchun bo'lsa — maqsadli auditoriya kim?", hint: "Yosh, hudud, xarid odatlari" },
+      { id: "users_count", type: "text", label: "Taxminiy foydalanuvchilar soni (1-yilda)" },
+      { id: "tech_level", type: "radio", label: "Foydalanuvchilarning texnik savodxonligi qanday?",
+        options: ["Yuqori", "O'rtacha", "Past — sodda interfeys kerak", "Aralash"] },
+    ]
+  },
+  {
+    title: "Funksionallik — mijozlar uchun",
+    desc: "Mijozga qaragan (B2C) imkoniyatlar. Faqat keraklilarini belgilang.",
+    questions: [
+      { id: "feat_customer", type: "checkbox", label: "Mijozlar uchun kerakli funksiyalar:", grid: true,
+        options: ["Mahsulot katalogi va qidiruv", "Savat va onlayn buyurtma", "Onlayn to'lov (Payme, Click, karta)", "Yetkazib berish / olib ketish", "Loyalty / bonus / chegirma", "Push bildirishnoma va aksiyalar", "Mahsulot sharhlari va reyting", "Profil va buyurtmalar tarixi", "Sevimlilar / wishlist", "QR / shtrix-kod skaneri"] },
+      { id: "feat_customer_other", type: "text", label: "Boshqa mijoz funksiyalari (ixtiyoriy)" },
+    ]
+  },
+  {
+    title: "Funksionallik — hodimlar uchun",
+    desc: "Ichki (B2E) imkoniyatlar. 100+ hodim uchun aynan shu qism muhim bo'lishi mumkin.",
+    questions: [
+      { id: "feat_staff", type: "checkbox", label: "Hodimlar uchun kerakli funksiyalar:", grid: true,
+        options: ["Inventarizatsiya / ombor boshqaruvi", "Narx va qoldiqlarni real vaqtda ko'rish", "Buyurtmalarni qabul qilish/bajarish", "Smena, davomat va vazifalar (HR)", "Ichki chat / e'lonlar", "Hisobotlar va dashboard", "Sotuv rejasi va KPI kuzatuvi", "Mahsulot qabul qilish (priyomka)"] },
+      { id: "feat_staff_other", type: "text", label: "Boshqa hodim funksiyalari (ixtiyoriy)" },
+    ]
+  },
+  {
+    title: "Integratsiyalar va mavjud tizimlar",
+    desc: "Dastur qaysi tizimlar bilan bog'lanishi kerakligini aniqlaymiz.",
+    questions: [
+      { id: "current_systems", type: "checkbox", label: "Hozir qaysi tizimlardan foydalanasiz?",
+        options: ["1C", "MoySklad", "POS / kassa tizimi", "ERP", "CRM", "Excel / qo'lda", "Hech qanday"] },
+      { id: "current_systems_detail", type: "text", label: "Tizim nomlari / versiyalari (agar bilsangiz)" },
+      { id: "payment_providers", type: "checkbox", label: "Qaysi to'lov tizimlari kerak?",
+        options: ["Payme", "Click", "Uzum Bank", "Bank kartasi (Uzcard/Humo/Visa)", "Naqd", "Hali aniqlanmagan"] },
+      { id: "data_ready", type: "radio", label: "Mahsulot / mijozlar ma'lumotlar bazasi tayyormi?",
+        options: ["Ha, tartiblangan bazada", "Qisman (Excel va h.k.)", "Yo'q, noldan yig'amiz"] },
+    ]
+  },
+  {
+    title: "Texnik talablar",
+    desc: "Platforma va texnik cheklovlar.",
+    questions: [
+      { id: "platforms", type: "checkbox", label: "Qaysi platformalar kerak?",
+        options: ["Android", "iOS", "Web (admin/brauzer)", "Hammasi"] },
+      { id: "offline", type: "radio", label: "Oflayn rejim (internetsiz ishlash) kerakmi?",
+        options: ["Ha, majburiy", "Yaxshi bo'lardi", "Yo'q"] },
+      { id: "languages", type: "checkbox", label: "Qaysi tillar kerak?",
+        options: ["O'zbek (lotin)", "O'zbek (kiril)", "Rus", "Ingliz"] },
+      { id: "admin_panel", type: "radio", label: "Boshqaruv paneli (admin/backend) kerakmi?",
+        options: ["Ha", "Yo'q", "Bilmayman — maslahat bering"] },
+    ]
+  },
+  {
+    title: "Dizayn va brending",
+    desc: "Ko'rinish va brend bo'yicha talablar.",
+    questions: [
+      { id: "branding", type: "radio", label: "Brending materiallari mavjudmi?",
+        options: ["Ha — logo, ranglar, brendbook bor", "Faqat logo bor", "Yo'q — biz yaratishimiz kerak"] },
+      { id: "design_refs", type: "textarea", label: "Yoqqan ilovalar yoki dizayn namunalari", hint: "Havola yoki nom yozing — uslubni tushunamiz" },
+      { id: "design_style", type: "text", label: "Afzal ko'rgan uslub", hint: "Masalan: minimalist, yorqin, premium" },
+    ]
+  },
+  {
+    title: "Byudjet, muddat va ko'lam",
+    desc: "Rejalashtirish uchun resurs va vaqt doirasi.",
+    questions: [
+      { id: "budget", type: "radio", label: "Byudjet doirasi qanday?",
+        options: ["Aniqlangan — uchrashuvda aytamiz", "Taxminiy oraliq bor", "Hali aniqlanmagan — taklif kutamiz"] },
+      { id: "deadline", type: "text", label: "Kerakli muddat / ishga tushirish sanasi", hint: "Biror tadbir yoki mavsumga bog'liqmi?" },
+      { id: "scope", type: "radio", label: "Boshlanish formati qanday?",
+        options: ["MVP — avval asosiy versiya, keyin kengaytiramiz", "To'liq mahsulot darrov", "Bilmayman — maslahat bering"] },
+    ]
+  },
+  {
+    title: "Jamoa, qaror va qo'llab-quvvatlash",
+    desc: "Hamkorlik jarayoni va kelajak.",
+    questions: [
+      { id: "decision_maker", type: "text", label: "Loyiha bo'yicha asosiy mas'ul / qaror qabul qiluvchi kim?" },
+      { id: "your_tech", type: "radio", label: "Sizning tarafingizda texnik mutaxassis bormi?",
+        options: ["Ha", "Yo'q", "Tashqaridan jalb qilamiz"] },
+      { id: "comm_format", type: "text", label: "Aloqa va hisobot formati qanday bo'lsin?", hint: "Masalan: haftalik demo, Telegram, jadval" },
+      { id: "support", type: "radio", label: "Ishga tushgandan keyin qo'llab-quvvatlash kerakmi?",
+        options: ["Ha, doimiy", "Vaqti-vaqti bilan", "Yo'q, o'zimiz boshqaramiz"] },
+      { id: "future_plans", type: "textarea", label: "Kelajakdagi rejalar / kengaytirish g'oyalari (ixtiyoriy)" },
+    ]
+  },
+];
+
+/* ============================================================
+   RENDER
+   ============================================================ */
+const form = document.getElementById("surveyForm");
+const STORAGE_KEY = "retail_survey_answers_v1";
+
+function esc(s){ return String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c])); }
+
+SURVEY.forEach((sec, i) => {
+  const section = document.createElement("section");
+  section.className = "section";
+  let html = `
+    <div class="section-head">
+      <div class="section-num">${i+1}</div>
+      <div>
+        <h2>${esc(sec.title)}</h2>
+        <p>${esc(sec.desc)}</p>
+      </div>
+    </div>
+    <div class="section-body">`;
+
+  sec.questions.forEach(q => {
+    html += `<div class="q" data-qid="${q.id}">`;
+    const hint = q.hint ? `<span class="hint">${esc(q.hint)}</span>` : "";
+    if (q.type === "text" || q.type === "number") {
+      html += `<label class="q-label" for="${q.id}">${esc(q.label)}${hint}</label>
+        <input type="${q.type}" id="${q.id}" name="${q.id}" />`;
+    } else if (q.type === "textarea") {
+      html += `<label class="q-label" for="${q.id}">${esc(q.label)}${hint}</label>
+        <textarea id="${q.id}" name="${q.id}"></textarea>`;
+    } else if (q.type === "radio" || q.type === "checkbox") {
+      html += `<div class="q-label">${esc(q.label)}${hint}</div>
+        <div class="options ${q.grid ? "grid2" : ""}">`;
+      q.options.forEach((opt, oi) => {
+        const oid = `${q.id}_${oi}`;
+        html += `<label class="opt" for="${oid}">
+          <input type="${q.type}" id="${oid}" name="${q.id}" value="${esc(opt)}" />
+          <span>${esc(opt)}</span>
+        </label>`;
+      });
+      html += `</div>`;
+    }
+    html += `</div>`;
+  });
+
+  html += `</div>`;
+  section.innerHTML = html;
+  form.appendChild(section);
+});
+
+/* ============================================================
+   PROGRESS + AUTOSAVE
+   ============================================================ */
+const totalQuestions = SURVEY.reduce((n, s) => n + s.questions.length, 0);
+document.getElementById("progressTotal").textContent = totalQuestions;
+
+function collect() {
+  const data = {};
+  SURVEY.forEach(s => s.questions.forEach(q => {
+    if (q.type === "checkbox") {
+      const checked = [...form.querySelectorAll(`input[name="${q.id}"]:checked`)].map(el => el.value);
+      if (checked.length) data[q.id] = checked;
+    } else if (q.type === "radio") {
+      const sel = form.querySelector(`input[name="${q.id}"]:checked`);
+      if (sel) data[q.id] = sel.value;
+    } else {
+      const el = form.querySelector(`[name="${q.id}"]`);
+      if (el && el.value.trim()) data[q.id] = el.value.trim();
+    }
+  }));
+  return data;
+}
+
+function answeredCount(data) {
+  return SURVEY.reduce((n, s) => n + s.questions.filter(q => data[q.id] != null).length, 0);
+}
+
+function updateProgress() {
+  const data = collect();
+  const n = answeredCount(data);
+  document.getElementById("progressCount").textContent = n;
+  document.getElementById("progressBar").style.width = (n / totalQuestions * 100) + "%";
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+}
+
+function restore() {
+  const raw = localStorage.getItem(STORAGE_KEY);
+  if (!raw) return;
+  let data; try { data = JSON.parse(raw); } catch { return; }
+  Object.entries(data).forEach(([id, val]) => {
+    if (Array.isArray(val)) {
+      val.forEach(v => {
+        const el = [...form.querySelectorAll(`input[name="${id}"]`)].find(e => e.value === v);
+        if (el) el.checked = true;
+      });
+    } else {
+      const radios = form.querySelectorAll(`input[type="radio"][name="${id}"]`);
+      if (radios.length) {
+        const el = [...radios].find(e => e.value === val);
+        if (el) el.checked = true;
+      } else {
+        const el = form.querySelector(`[name="${id}"]`);
+        if (el) el.value = val;
+      }
+    }
+  });
+  updateProgress();
+}
+
+form.addEventListener("input", updateProgress);
+form.addEventListener("change", updateProgress);
+
+/* ============================================================
+   EXPORT
+   ============================================================ */
+function labelFor(id) {
+  for (const s of SURVEY) for (const q of s.questions) if (q.id === id) return q.label;
+  return id;
+}
+
+function buildMarkdown() {
+  const data = collect();
+  const date = new Date().toLocaleString("uz-UZ");
+  let md = `# Retail Mobil Dastur — Discovery so'rovnomasi javoblari\n\n_To'ldirilgan: ${date}_\n\n`;
+  SURVEY.forEach((s, i) => {
+    md += `## ${i+1}. ${s.title}\n\n`;
+    s.questions.forEach(q => {
+      const v = data[q.id];
+      const ans = v == null ? "_(javob berilmagan)_" : (Array.isArray(v) ? v.join(", ") : v);
+      md += `**${q.label}**\n\n${ans}\n\n`;
+    });
+  });
+  return md;
+}
+
+function download(filename, text, type) {
+  const blob = new Blob([text], { type: type || "text/plain;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url; a.download = filename;
+  document.body.appendChild(a); a.click();
+  document.body.removeChild(a); URL.revokeObjectURL(url);
+}
+
+document.getElementById("btnExport").addEventListener("click", () =>
+  download("retail-survey-javoblar.md", buildMarkdown(), "text/markdown;charset=utf-8"));
+
+document.getElementById("btnJson").addEventListener("click", () =>
+  download("retail-survey-javoblar.json", JSON.stringify(collect(), null, 2), "application/json"));
+
+document.getElementById("btnPrint").addEventListener("click", () => window.print());
+
+document.getElementById("btnReset").addEventListener("click", () => {
+  if (confirm("Barcha javoblar o'chiriladi. Davom etamizmi?")) {
+    localStorage.removeItem(STORAGE_KEY);
+    form.reset();
+    updateProgress();
+  }
+});
+
+restore();
+updateProgress();
+</script>
+</body>
+</html>
