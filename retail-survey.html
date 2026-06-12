@@ -3,11 +3,10 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Retail Mobil Dastur — Discovery So'rovnomasi</title>
+<title>Retail Mobil Dastur — Adaptiv So'rovnoma</title>
 <style>
   :root {
     --bg: #0f1729;
-    --bg-soft: #16203a;
     --card: #ffffff;
     --ink: #1b2436;
     --muted: #667085;
@@ -15,6 +14,8 @@
     --brand: #4f46e5;
     --brand-soft: #eef2ff;
     --brand-ink: #3730a3;
+    --accent: #0ea5a4;
+    --accent-soft: #e6fffb;
     --ok: #16a34a;
     --shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
   }
@@ -28,7 +29,6 @@
     -webkit-font-smoothing: antialiased;
   }
 
-  /* ---- Header ---- */
   header {
     color: #fff;
     padding: 40px 20px 28px;
@@ -45,9 +45,8 @@
     margin-bottom: 16px;
   }
   header h1 { font-size: 30px; margin: 0 0 8px; font-weight: 800; letter-spacing: -0.5px; }
-  header p { margin: 0 auto; max-width: 640px; color: #c3cbe0; font-size: 15px; }
+  header p { margin: 0 auto; max-width: 660px; color: #c3cbe0; font-size: 15px; }
 
-  /* ---- Progress ---- */
   .progress-wrap {
     position: sticky; top: 0; z-index: 20;
     background: rgba(15,23,41,0.85);
@@ -57,10 +56,9 @@
   }
   .progress-inner { max-width: 820px; margin: 0 auto; display: flex; align-items: center; gap: 14px; }
   .progress-track { flex: 1; height: 8px; background: rgba(255,255,255,0.14); border-radius: 999px; overflow: hidden; }
-  .progress-bar { height: 100%; width: 0%; background: linear-gradient(90deg, #6366f1, #22d3ee); transition: width .3s ease; }
+  .progress-bar { height: 100%; width: 0%; background: linear-gradient(90deg, #6366f1, #22d3ee); transition: width .35s ease; }
   .progress-text { color: #cdd5ea; font-size: 13px; font-variant-numeric: tabular-nums; white-space: nowrap; }
 
-  /* ---- Layout ---- */
   main { max-width: 820px; margin: 28px auto 60px; padding: 0 20px; }
 
   .section {
@@ -70,12 +68,15 @@
     margin-bottom: 22px;
     overflow: hidden;
   }
+  .section.is-hidden { display: none; }
+  .section.branch-section { border: 1.5px solid var(--accent); }
   .section-head {
     display: flex; align-items: center; gap: 14px;
     padding: 20px 24px;
     border-bottom: 1px solid var(--line);
     background: linear-gradient(180deg, #fbfcff, #f6f8fd);
   }
+  .branch-section .section-head { background: linear-gradient(180deg, #f0fffd, #e6fffb); }
   .section-num {
     flex: 0 0 auto;
     width: 38px; height: 38px;
@@ -83,20 +84,39 @@
     background: var(--brand-soft);
     color: var(--brand-ink);
     display: grid; place-items: center;
-    font-weight: 800; font-size: 16px;
+    font-weight: 800; font-size: 15px;
   }
+  .branch-section .section-num { background: var(--accent-soft); color: #0f766e; }
   .section-head h2 { font-size: 19px; margin: 0; }
   .section-head p { margin: 2px 0 0; font-size: 13px; color: var(--muted); }
+  .section-tag {
+    margin-left: auto; flex: 0 0 auto;
+    font-size: 11.5px; font-weight: 700; letter-spacing: .3px;
+    color: #0f766e; background: var(--accent-soft);
+    border: 1px solid #99f6e4; border-radius: 999px; padding: 4px 10px;
+  }
   .section-body { padding: 8px 24px 22px; }
 
   .q { padding: 16px 0; border-bottom: 1px dashed var(--line); }
   .q:last-child { border-bottom: none; }
-  .q > label.q-label, .q > .q-label {
-    display: block; font-weight: 600; font-size: 15px; margin-bottom: 10px; color: var(--ink);
+  .q.is-hidden { display: none; }
+  .q.conditional {
+    border-bottom: none;
+    margin: 10px 0;
+    padding: 14px 16px;
+    border-left: 3px solid var(--accent);
+    background: #f7fffe;
+    border-radius: 0 10px 10px 0;
+    animation: slideIn .25s ease;
+  }
+  @keyframes slideIn { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: none; } }
+  .q .q-label { display: block; font-weight: 600; font-size: 15px; margin-bottom: 10px; color: var(--ink); }
+  .q.conditional .q-label::before {
+    content: "↳ "; color: var(--accent); font-weight: 800;
   }
   .q .hint { font-weight: 400; color: var(--muted); font-size: 13px; display: block; margin-top: 2px; }
 
-  input[type="text"], input[type="number"], input[type="email"], textarea, select {
+  input[type="text"], input[type="number"], textarea, select {
     width: 100%;
     border: 1.5px solid var(--line);
     border-radius: 10px;
@@ -107,7 +127,7 @@
     background: #fff;
     transition: border-color .15s, box-shadow .15s;
   }
-  textarea { min-height: 84px; resize: vertical; }
+  textarea { min-height: 80px; resize: vertical; }
   input:focus, textarea:focus, select:focus {
     outline: none; border-color: var(--brand); box-shadow: 0 0 0 4px var(--brand-soft);
   }
@@ -129,7 +149,6 @@
   .opt input:checked + span { font-weight: 600; color: var(--brand-ink); }
   .opt:has(input:checked) { border-color: var(--brand); background: var(--brand-soft); }
 
-  /* ---- Footer / actions ---- */
   .actions {
     position: sticky; bottom: 0;
     background: rgba(255,255,255,0.96);
@@ -149,11 +168,9 @@
   .btn-primary:hover { background: #4338ca; }
   .btn-ghost { background: #f1f3f9; color: var(--ink); }
   .btn-ghost:hover { background: #e6e9f2; }
-  .btn-ok { background: var(--ok); color: #fff; }
 
   .save-note { text-align: center; font-size: 12.5px; color: #c3cbe0; padding: 0 20px 30px; }
 
-  /* ---- Print ---- */
   @media print {
     body { background: #fff; }
     .progress-wrap, .actions, header .badge, .save-note { display: none !important; }
@@ -161,57 +178,214 @@
     header p { color: #444; }
     .section { box-shadow: none; border: 1px solid #ccc; break-inside: avoid; }
     .section-head { background: #f3f3f3; }
+    .q.is-hidden, .section.is-hidden { display: none !important; }
   }
 </style>
 </head>
 <body>
 
 <header>
-  <div class="badge">Discovery / Requirements uchrashuvi</div>
-  <h1>Retail Mobil Dastur — So'rovnoma</h1>
-  <p>Loyiha maqsadi, foydalanuvchilar va talablarni aniq tushunish uchun savollar. Iltimos, imkon qadar batafsil javob bering — bo'sh qoldirgan joylaringizni uchrashuvda birga to'ldiramiz.</p>
+  <div class="badge">Adaptiv Discovery / Requirements so'rovnomasi</div>
+  <h1>Retail Mobil Dastur — Adaptiv So'rovnoma</h1>
+  <p>Bu so'rovnoma sizning javoblaringizga moslashadi: sohangizni tanlaganingizda faqat o'sha sohaga oid savollar ochiladi. Kerakmas savollar bilan vaqtingiz behuda ketmaydi.</p>
 </header>
 
 <div class="progress-wrap">
   <div class="progress-inner">
     <div class="progress-track"><div class="progress-bar" id="progressBar"></div></div>
-    <div class="progress-text"><span id="progressCount">0</span> / <span id="progressTotal">0</span> javob</div>
+    <div class="progress-text"><span id="progressCount">0</span> / <span id="progressTotal">0</span> savol</div>
   </div>
 </div>
 
 <main>
-  <form id="surveyForm">
-    <!-- Sections injected by JS -->
-  </form>
+  <form id="surveyForm"></form>
   <p class="save-note">Javoblaringiz brauzeringizda avtomatik saqlanadi (localStorage). Tugatgach pastdagi tugmalar orqali yuklab oling.</p>
 </main>
 
 <div class="actions">
   <button type="button" class="btn-primary" id="btnExport">⬇︎ Javoblarni yuklab olish (.md)</button>
-  <button type="button" class="btn-ghost" id="btnJson">{ } JSON yuklab olish</button>
-  <button type="button" class="btn-ghost" id="btnPrint">🖨 Chop etish / PDF</button>
+  <button type="button" class="btn-ghost" id="btnJson">{ } JSON</button>
+  <button type="button" class="btn-ghost" id="btnPrint">🖨 PDF / Chop etish</button>
   <button type="button" class="btn-ghost" id="btnReset">↺ Tozalash</button>
 </div>
 
 <script>
 /* ============================================================
-   SAVOLLAR TO'PLAMI — kategoriyalar bo'yicha
-   type: text | textarea | number | radio | checkbox
+   SOHA QIYMATLARI (constant) — moslik xatoliklarining oldini olish
+   ============================================================ */
+const SECTOR = {
+  FOOD:    "Oziq-ovqat / supermarket",
+  FASHION: "Kiyim-kechak / moda",
+  ELEC:    "Elektronika / maishiy texnika",
+  PHARM:   "Dorixona / salomatlik",
+  FURN:    "Mebel / uy-ro'zg'or",
+  CONSTR:  "Qurilish mollari",
+  OTHER:   "Boshqa",
+};
+
+/* ============================================================
+   SAVOLLAR — har bir savolga ixtiyoriy "showIf" shart qo'shsa bo'ladi.
+   showIf turlari:
+     { q:"<savol_id>", anyOf:[qiymatlar] }   -> shu qiymatlardan biri tanlansa
+     { q:"<savol_id>", includes:"<qiymat>" } -> checkboxda shu belgilansa
+     { q:"<savol_id>", exists:true }         -> savolga javob berilgan bo'lsa
+   showIf massiv bo'lsa — barcha shartlar bajarilishi kerak (AND).
+   showIf ko'rsatilgan savol o'zi ko'rinmasa, bola savol ham ko'rinmaydi (ierarxiya).
    ============================================================ */
 const SURVEY = [
+  /* ---------- 1. UMUMIY: Kompaniya ---------- */
   {
     title: "Kompaniya va biznes konteksti",
-    desc: "Biznesingizni va hozirgi holatni tushunib olamiz.",
+    desc: "Biznesingizni va sohangizni aniqlaymiz.",
     questions: [
       { id: "company_name", type: "text", label: "Kompaniya nomi" },
       { id: "retail_type", type: "radio", label: "Retail yo'nalishingiz qaysi?",
-        options: ["Oziq-ovqat / supermarket", "Kiyim-kechak / moda", "Elektronika / maishiy texnika", "Dorixona / salomatlik", "Mebel / uy-ro'zg'or", "Qurilish mollari", "Boshqa (izohda yozing)"] },
+        hint: "Tanlovingizga qarab quyida sohangizga maxsus savollar ochiladi.",
+        options: [SECTOR.FOOD, SECTOR.FASHION, SECTOR.ELEC, SECTOR.PHARM, SECTOR.FURN, SECTOR.CONSTR, SECTOR.OTHER] },
       { id: "stores_count", type: "text", label: "Do'kon / filiallar soni va joylashuvi", hint: "Masalan: 12 ta filial, Toshkent va Samarqand" },
       { id: "employees", type: "text", label: "Hodimlar soni va asosiy bo'limlar", hint: "100+ hodim — qaysi bo'limlar: savdo, ombor, HR, marketing?" },
       { id: "sales_channels", type: "checkbox", label: "Hozir qaysi savdo kanallaridan foydalanasiz?",
         options: ["Faqat offline do'kon", "O'z veb-sayti", "Telegram / Instagram", "Marketplace (Uzum, Yandex...)", "Telefon orqali buyurtma"] },
     ]
   },
+
+  /* ---------- 2. SOHAGA OID: OZIQ-OVQAT ---------- */
+  {
+    title: "Oziq-ovqat: maxsus talablar",
+    desc: "Oziq-ovqat / supermarket sohasiga xos savollar.",
+    branch: true,
+    showIf: { q: "retail_type", anyOf: [SECTOR.FOOD] },
+    questions: [
+      { id: "food_categories", type: "checkbox", label: "Qaysi mahsulot guruhlari bilan ishlaysiz?", grid: true,
+        options: ["Tez buziladigan (sut, go'sht, baliq)", "Muzlatilgan mahsulotlar", "Nonvoy mahsulotlari", "Meva va sabzavotlar", "Ichimliklar", "Quruq oziq-ovqat / bakaleya", "Tayyor taomlar / kulinariya"] },
+      { id: "food_expiry", type: "radio", label: "Yaroqlilik muddati (срок годности) kuzatuvi qanchalik muhim?",
+        options: ["Juda muhim — avtomatik ogohlantirish kerak", "O'rtacha", "Muhim emas"] },
+      // 2-daraja: tez buziladigan/muzlatilgan tanlansa -> sovuq zanjir
+      { id: "food_coldchain", type: "radio", label: "Sovuq zanjir / temperatura nazorati kerakmi?",
+        hint: "Tez buziladigan yoki muzlatilgan mahsulotlar uchun muhim.",
+        showIf: [{ q: "food_categories", includes: "Tez buziladigan (sut, go'sht, baliq)" }],
+        options: ["Ha — temperatura monitoringi kerak", "Yo'q"] },
+      { id: "food_coldchain2", type: "radio", label: "Sovuq zanjir / temperatura nazorati kerakmi?",
+        hint: "Muzlatilgan mahsulotlar uchun.",
+        showIf: [{ q: "food_categories", includes: "Muzlatilgan mahsulotlar" }, { q: "food_categories", includes: "Tez buziladigan (sut, go'sht, baliq)", negate: true }],
+        options: ["Ha — temperatura monitoringi kerak", "Yo'q"] },
+      { id: "food_weight", type: "radio", label: "Vazn bo'yicha (tarozida) sotiladigan mahsulotlar bormi?",
+        options: ["Ha, ko'p", "Qisman", "Yo'q"] },
+      // 2-daraja: vazn bo'yicha sotsa -> tarozi integratsiyasi
+      { id: "food_scale", type: "radio", label: "Tarozi / shtrix-kod tarozisi bilan integratsiya kerakmi?",
+        showIf: { q: "food_weight", anyOf: ["Ha, ko'p", "Qisman"] },
+        options: ["Ha", "Yo'q", "Bilmayman — maslahat bering"] },
+      { id: "food_delivery", type: "radio", label: "Tez yetkazib berish (mahsulotlar 1-2 soatda) kerakmi?",
+        options: ["Ha — asosiy xususiyat", "Kelajakda", "Yo'q"] },
+      { id: "food_lot", type: "radio", label: "Partiya / lot va sifat sertifikatlari kuzatuvi kerakmi?",
+        options: ["Ha", "Yo'q"] },
+    ]
+  },
+
+  /* ---------- 2. SOHAGA OID: KIYIM-KECHAK ---------- */
+  {
+    title: "Kiyim-kechak: maxsus talablar",
+    desc: "Kiyim-kechak / moda sohasiga xos savollar.",
+    branch: true,
+    showIf: { q: "retail_type", anyOf: [SECTOR.FASHION] },
+    questions: [
+      { id: "fashion_variants", type: "radio", label: "O'lcham va rang variantlari (SKU matritsa) muhimmi?",
+        hint: "Masalan: bitta ko'ylak — S/M/L va 3 rangda.",
+        options: ["Ha — har bir variant alohida qoldiq", "Yo'q"] },
+      { id: "fashion_season", type: "radio", label: "Mavsumiy kolleksiyalar bilan ishlaysizmi?",
+        options: ["Ha — mavsumiy yangilanish", "Yo'q"] },
+      { id: "fashion_features", type: "checkbox", label: "Qaysi maxsus funksiyalar kerak?", grid: true,
+        options: ["O'lcham jadvali (size guide)", "Onlayn qaytarish / almashtirish", "Stil bo'yicha tavsiya", "Lookbook / kombinatsiyalar", "Kiyib ko'rish xonasini bron qilish"] },
+      // 2-daraja: qaytarish tanlansa
+      { id: "fashion_returns", type: "textarea", label: "Qaytarish / almashtirish jarayoni qanday bo'lishi kerak?",
+        showIf: { q: "fashion_features", includes: "Onlayn qaytarish / almashtirish" },
+        hint: "Muddat, shartlar, pul qaytarish usuli." },
+    ]
+  },
+
+  /* ---------- 2. SOHAGA OID: ELEKTRONIKA ---------- */
+  {
+    title: "Elektronika: maxsus talablar",
+    desc: "Elektronika / maishiy texnika sohasiga xos savollar.",
+    branch: true,
+    showIf: { q: "retail_type", anyOf: [SECTOR.ELEC] },
+    questions: [
+      { id: "elec_features", type: "checkbox", label: "Qaysi maxsus funksiyalar kerak?", grid: true,
+        options: ["Seriya raqami / IMEI kuzatuvi", "Kafolat boshqaruvi", "Texnik xususiyatlarni taqqoslash", "To'plam / aksessuar tavsiyasi", "Muddatli to'lov / kredit", "Trade-in (eski qurilmani topshirish)"] },
+      // 2-daraja: kredit tanlansa -> hamkorlar
+      { id: "elec_credit", type: "checkbox", label: "Qaysi muddatli to'lov / kredit hamkorlari kerak?",
+        showIf: { q: "elec_features", includes: "Muddatli to'lov / kredit" },
+        options: ["Uzum Nasiya", "Alif", "Anor", "Bank rassrochkasi", "Hali aniqlanmagan"] },
+      // 2-daraja: kafolat tanlansa
+      { id: "elec_warranty", type: "radio", label: "Kafolat muddati va servis markazlari kuzatuvi kerakmi?",
+        showIf: { q: "elec_features", includes: "Kafolat boshqaruvi" },
+        options: ["Ha — to'liq kafolat tarixi", "Faqat muddatni ko'rsatish", "Yo'q"] },
+    ]
+  },
+
+  /* ---------- 2. SOHAGA OID: DORIXONA ---------- */
+  {
+    title: "Dorixona: maxsus talablar",
+    desc: "Dorixona / salomatlik sohasiga xos savollar.",
+    branch: true,
+    showIf: { q: "retail_type", anyOf: [SECTOR.PHARM] },
+    questions: [
+      { id: "pharm_features", type: "checkbox", label: "Qaysi maxsus funksiyalar kerak?", grid: true,
+        options: ["Retsept (recept) boshqaruvi", "Muddati va partiya nazorati", "Dori o'zaro ta'siri ogohlantirishi", "Analog dori tavsiyasi", "Litsenziya / sertifikat hisobi", "Maxsus saqlash (sovuqda)"] },
+      // 2-daraja: retsept tanlansa
+      { id: "pharm_prescription", type: "radio", label: "Retsept qanday tasdiqlanadi?",
+        showIf: { q: "pharm_features", includes: "Retsept (recept) boshqaruvi" },
+        options: ["Elektron retsept tizimi orqali", "Skan / foto yuklash", "Shifokor tasdig'i", "Hali aniqlanmagan"] },
+      { id: "pharm_regulation", type: "textarea", label: "Davlat tartibga solish yoki hisobot talablari bormi?",
+        hint: "Masalan: maxsus hisobotlar, nazoratdagi dorilar." },
+    ]
+  },
+
+  /* ---------- 2. SOHAGA OID: MEBEL ---------- */
+  {
+    title: "Mebel / uy-ro'zg'or: maxsus talablar",
+    desc: "Mebel va uy-ro'zg'or sohasiga xos savollar.",
+    branch: true,
+    showIf: { q: "retail_type", anyOf: [SECTOR.FURN] },
+    questions: [
+      { id: "furn_features", type: "checkbox", label: "Qaysi maxsus funksiyalar kerak?", grid: true,
+        options: ["Katta hajmli yetkazib berish", "Montaj / yig'ish xizmati", "3D / AR orqali ko'rish", "Buyurtmaga tayyorlash (custom o'lcham)", "Kafolat boshqaruvi"] },
+      // 2-daraja: custom tanlansa
+      { id: "furn_custom", type: "textarea", label: "Buyurtmaga tayyorlash (custom) jarayoni qanday bo'lishi kerak?",
+        showIf: { q: "furn_features", includes: "Buyurtmaga tayyorlash (custom o'lcham)" },
+        hint: "O'lcham tanlash, narx hisoblash, tayyorlash muddati." },
+    ]
+  },
+
+  /* ---------- 2. SOHAGA OID: QURILISH ---------- */
+  {
+    title: "Qurilish mollari: maxsus talablar",
+    desc: "Qurilish mollari sohasiga xos savollar.",
+    branch: true,
+    showIf: { q: "retail_type", anyOf: [SECTOR.CONSTR] },
+    questions: [
+      { id: "constr_features", type: "checkbox", label: "Qaysi maxsus funksiyalar kerak?", grid: true,
+        options: ["Ulgurji (B2B) narxlash", "Hajmiy birliklar (m2 / m3 / tonna)", "Yetkazib berish logistikasi", "Loyiha bo'yicha material kalkulyatori", "Ortiqcha materialni qaytarish"] },
+      // 2-daraja: B2B narxlash tanlansa
+      { id: "constr_b2b", type: "radio", label: "Mijoz turiga qarab narx darajalari kerakmi?",
+        showIf: { q: "constr_features", includes: "Ulgurji (B2B) narxlash" },
+        options: ["Ha — chakana / ulgurji / quruvchi narxlari", "Yo'q"] },
+    ]
+  },
+
+  /* ---------- 2. SOHAGA OID: BOSHQA ---------- */
+  {
+    title: "Sohangiz: maxsus talablar",
+    desc: "Tanlanmagan soha uchun.",
+    branch: true,
+    showIf: { q: "retail_type", anyOf: [SECTOR.OTHER] },
+    questions: [
+      { id: "other_sector", type: "text", label: "Aniq sohangizni yozing" },
+      { id: "other_desc", type: "textarea", label: "Sohangizga xos maxsus talab va xususiyatlar", hint: "Mahsulot turi, o'ziga xos jarayonlar, qonuniy talablar." },
+    ]
+  },
+
+  /* ---------- 3. Loyiha maqsadi ---------- */
   {
     title: "Loyiha maqsadi va muammolar",
     desc: "Eng muhim qism — nima uchun va nimaga erishmoqchisiz.",
@@ -220,55 +394,82 @@ const SURVEY = [
       { id: "pain_points", type: "textarea", label: "Hozir qanday asosiy muammo yoki noqulayliklarga duch kelyapsiz?", hint: "Masalan: qoldiqlarni kuzatish qiyin, mijozlar qaytib kelmaydi, hisobotlar qo'lda yig'iladi" },
       { id: "main_goal", type: "radio", label: "Dasturning ASOSIY maqsadi nima?",
         options: ["Savdoni / daromadni oshirish", "Mijozlarni ushlab turish (loyalty)", "Ichki jarayonlarni avtomatlashtirish", "Hodimlar ish unumini oshirish", "Brend / imidj", "Boshqa"] },
-      { id: "kpi", type: "textarea", label: "Muvaffaqiyatni qanday o'lchaymiz? (KPI)", hint: "Masalan: oylik buyurtmalar soni, takroriy xaridlar %, vaqt tejash, xatolar kamayishi" },
+      { id: "kpi", type: "textarea", label: "Muvaffaqiyatni qanday o'lchaymiz? (KPI)", hint: "Masalan: oylik buyurtmalar soni, takroriy xaridlar %, vaqt tejash" },
       { id: "competitors", type: "textarea", label: "Raqobatchilarda yoki yoqtirgan kompaniyalarda shunga o'xshash yechim bormi?" },
     ]
   },
+
+  /* ---------- 4. Foydalanuvchilar ---------- */
   {
     title: "Foydalanuvchilar — dastur kim uchun?",
     desc: "Auditoriyani aniqlaymiz: mijozlar, hodimlar yoki ikkalasi.",
     questions: [
       { id: "audience", type: "checkbox", label: "Dastur kim uchun mo'ljallangan?",
         options: ["Mijozlar (B2C)", "Hodimlar / ichki foydalanish (B2E)", "Yetkazib beruvchilar / hamkorlar (B2B)"] },
-      { id: "employee_roles", type: "checkbox", label: "Agar hodimlar uchun bo'lsa — qaysi rollar foydalanadi?",
+      // shartli: hodimlar tanlansa rollar ochiladi
+      { id: "employee_roles", type: "checkbox", label: "Qaysi hodim rollari foydalanadi?",
+        showIf: { q: "audience", includes: "Hodimlar / ichki foydalanish (B2E)" },
         options: ["Kassir / sotuvchi", "Ombor xodimi", "Filial menejeri", "Yuqori rahbariyat", "Kuryer / yetkazib beruvchi", "HR / buxgalteriya"] },
-      { id: "customer_audience", type: "textarea", label: "Agar mijozlar uchun bo'lsa — maqsadli auditoriya kim?", hint: "Yosh, hudud, xarid odatlari" },
+      // shartli: mijozlar tanlansa
+      { id: "customer_audience", type: "textarea", label: "Mijozlar — maqsadli auditoriya kim?",
+        showIf: { q: "audience", includes: "Mijozlar (B2C)" },
+        hint: "Yosh, hudud, xarid odatlari" },
       { id: "users_count", type: "text", label: "Taxminiy foydalanuvchilar soni (1-yilda)" },
       { id: "tech_level", type: "radio", label: "Foydalanuvchilarning texnik savodxonligi qanday?",
         options: ["Yuqori", "O'rtacha", "Past — sodda interfeys kerak", "Aralash"] },
     ]
   },
+
+  /* ---------- 5. B2C funksiyalar (mijoz tanlansa) ---------- */
   {
-    title: "Funksionallik — mijozlar uchun",
-    desc: "Mijozga qaragan (B2C) imkoniyatlar. Faqat keraklilarini belgilang.",
+    title: "Funksionallik — mijozlar uchun (B2C)",
+    desc: "Mijozga qaragan imkoniyatlar.",
+    showIf: { q: "audience", includes: "Mijozlar (B2C)" },
     questions: [
       { id: "feat_customer", type: "checkbox", label: "Mijozlar uchun kerakli funksiyalar:", grid: true,
-        options: ["Mahsulot katalogi va qidiruv", "Savat va onlayn buyurtma", "Onlayn to'lov (Payme, Click, karta)", "Yetkazib berish / olib ketish", "Loyalty / bonus / chegirma", "Push bildirishnoma va aksiyalar", "Mahsulot sharhlari va reyting", "Profil va buyurtmalar tarixi", "Sevimlilar / wishlist", "QR / shtrix-kod skaneri"] },
+        options: ["Mahsulot katalogi va qidiruv", "Savat va onlayn buyurtma", "Onlayn to'lov", "Yetkazib berish / olib ketish", "Loyalty / bonus / chegirma", "Push bildirishnoma va aksiyalar", "Mahsulot sharhlari va reyting", "Profil va buyurtmalar tarixi", "Sevimlilar / wishlist", "QR / shtrix-kod skaneri"] },
+      // 2-daraja: loyalty tanlansa
+      { id: "feat_loyalty", type: "radio", label: "Loyalty tizimi qanday ishlasin?",
+        showIf: { q: "feat_customer", includes: "Loyalty / bonus / chegirma" },
+        options: ["Bonus ball (cashback)", "Darajali (silver/gold) tizim", "Chegirma kuponlari", "Hali aniqlanmagan"] },
       { id: "feat_customer_other", type: "text", label: "Boshqa mijoz funksiyalari (ixtiyoriy)" },
     ]
   },
+
+  /* ---------- 6. B2E funksiyalar (hodim tanlansa) ---------- */
   {
-    title: "Funksionallik — hodimlar uchun",
-    desc: "Ichki (B2E) imkoniyatlar. 100+ hodim uchun aynan shu qism muhim bo'lishi mumkin.",
+    title: "Funksionallik — hodimlar uchun (B2E)",
+    desc: "Ichki imkoniyatlar. 100+ hodim uchun aynan shu qism muhim.",
+    showIf: { q: "audience", includes: "Hodimlar / ichki foydalanish (B2E)" },
     questions: [
       { id: "feat_staff", type: "checkbox", label: "Hodimlar uchun kerakli funksiyalar:", grid: true,
-        options: ["Inventarizatsiya / ombor boshqaruvi", "Narx va qoldiqlarni real vaqtda ko'rish", "Buyurtmalarni qabul qilish/bajarish", "Smena, davomat va vazifalar (HR)", "Ichki chat / e'lonlar", "Hisobotlar va dashboard", "Sotuv rejasi va KPI kuzatuvi", "Mahsulot qabul qilish (priyomka)"] },
+        options: ["Inventarizatsiya / ombor boshqaruvi", "Narx va qoldiqlarni real vaqtda ko'rish", "Buyurtmalarni qabul qilish / bajarish", "Smena, davomat va vazifalar (HR)", "Ichki chat / e'lonlar", "Hisobotlar va dashboard", "Sotuv rejasi va KPI kuzatuvi", "Mahsulot qabul qilish (priyomka)"] },
+      // 2-daraja: HR tanlansa
+      { id: "feat_hr", type: "checkbox", label: "HR / smena qismida nima kerak?",
+        showIf: { q: "feat_staff", includes: "Smena, davomat va vazifalar (HR)" },
+        options: ["Davomat (QR / geolokatsiya)", "Smena jadvali", "Vazifa tayinlash", "Ish haqi hisobi"] },
       { id: "feat_staff_other", type: "text", label: "Boshqa hodim funksiyalari (ixtiyoriy)" },
     ]
   },
+
+  /* ---------- 7. Integratsiyalar ---------- */
   {
     title: "Integratsiyalar va mavjud tizimlar",
-    desc: "Dastur qaysi tizimlar bilan bog'lanishi kerakligini aniqlaymiz.",
+    desc: "Dastur qaysi tizimlar bilan bog'lanishi kerak.",
     questions: [
       { id: "current_systems", type: "checkbox", label: "Hozir qaysi tizimlardan foydalanasiz?",
         options: ["1C", "MoySklad", "POS / kassa tizimi", "ERP", "CRM", "Excel / qo'lda", "Hech qanday"] },
-      { id: "current_systems_detail", type: "text", label: "Tizim nomlari / versiyalari (agar bilsangiz)" },
+      { id: "current_systems_detail", type: "text", label: "Tizim nomlari / versiyalari",
+        showIf: { q: "current_systems", exists: true } },
       { id: "payment_providers", type: "checkbox", label: "Qaysi to'lov tizimlari kerak?",
+        showIf: { q: "audience", includes: "Mijozlar (B2C)" },
         options: ["Payme", "Click", "Uzum Bank", "Bank kartasi (Uzcard/Humo/Visa)", "Naqd", "Hali aniqlanmagan"] },
-      { id: "data_ready", type: "radio", label: "Mahsulot / mijozlar ma'lumotlar bazasi tayyormi?",
+      { id: "data_ready", type: "radio", label: "Mahsulot / mijozlar bazasi tayyormi?",
         options: ["Ha, tartiblangan bazada", "Qisman (Excel va h.k.)", "Yo'q, noldan yig'amiz"] },
     ]
   },
+
+  /* ---------- 8. Texnik ---------- */
   {
     title: "Texnik talablar",
     desc: "Platforma va texnik cheklovlar.",
@@ -283,16 +484,20 @@ const SURVEY = [
         options: ["Ha", "Yo'q", "Bilmayman — maslahat bering"] },
     ]
   },
+
+  /* ---------- 9. Dizayn ---------- */
   {
     title: "Dizayn va brending",
     desc: "Ko'rinish va brend bo'yicha talablar.",
     questions: [
       { id: "branding", type: "radio", label: "Brending materiallari mavjudmi?",
         options: ["Ha — logo, ranglar, brendbook bor", "Faqat logo bor", "Yo'q — biz yaratishimiz kerak"] },
-      { id: "design_refs", type: "textarea", label: "Yoqqan ilovalar yoki dizayn namunalari", hint: "Havola yoki nom yozing — uslubni tushunamiz" },
+      { id: "design_refs", type: "textarea", label: "Yoqqan ilovalar yoki dizayn namunalari", hint: "Havola yoki nom yozing" },
       { id: "design_style", type: "text", label: "Afzal ko'rgan uslub", hint: "Masalan: minimalist, yorqin, premium" },
     ]
   },
+
+  /* ---------- 10. Byudjet ---------- */
   {
     title: "Byudjet, muddat va ko'lam",
     desc: "Rejalashtirish uchun resurs va vaqt doirasi.",
@@ -304,6 +509,8 @@ const SURVEY = [
         options: ["MVP — avval asosiy versiya, keyin kengaytiramiz", "To'liq mahsulot darrov", "Bilmayman — maslahat bering"] },
     ]
   },
+
+  /* ---------- 11. Jamoa ---------- */
   {
     title: "Jamoa, qaror va qo'llab-quvvatlash",
     desc: "Hamkorlik jarayoni va kelajak.",
@@ -323,25 +530,47 @@ const SURVEY = [
    RENDER
    ============================================================ */
 const form = document.getElementById("surveyForm");
-const STORAGE_KEY = "retail_survey_answers_v1";
+const STORAGE_KEY = "retail_survey_adaptive_v1";
 
 function esc(s){ return String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c])); }
 
-SURVEY.forEach((sec, i) => {
+const allQuestions = [];
+const qById = {};
+SURVEY.forEach(sec => sec.questions.forEach(q => {
+  q._secShowIf = sec.showIf || null;   // bo'lim sharti har bir savolga meros bo'ladi
+  allQuestions.push(q);
+  qById[q.id] = q;
+}));
+
+// Savolning to'liq shartlari = bo'lim sharti (agar bo'lsa) + savolning o'z sharti
+function effectiveConds(q) {
+  const conds = [];
+  if (q._secShowIf) (Array.isArray(q._secShowIf) ? q._secShowIf : [q._secShowIf]).forEach(c => conds.push(c));
+  if (q.showIf)     (Array.isArray(q.showIf)     ? q.showIf     : [q.showIf]).forEach(c => conds.push(c));
+  return conds;
+}
+
+let displayNum = 0;
+SURVEY.forEach((sec) => {
   const section = document.createElement("section");
-  section.className = "section";
+  section.className = "section" + (sec.branch ? " branch-section" : "");
+  section.dataset.secIndex = SURVEY.indexOf(sec);
+  displayNum++;
+  const tag = sec.branch ? `<span class="section-tag">SOHAGA OID</span>` : "";
   let html = `
     <div class="section-head">
-      <div class="section-num">${i+1}</div>
+      <div class="section-num">${displayNum}</div>
       <div>
         <h2>${esc(sec.title)}</h2>
         <p>${esc(sec.desc)}</p>
       </div>
+      ${tag}
     </div>
     <div class="section-body">`;
 
   sec.questions.forEach(q => {
-    html += `<div class="q" data-qid="${q.id}">`;
+    const condClass = q.showIf ? " conditional" : "";
+    html += `<div class="q${condClass}" data-qid="${q.id}">`;
     const hint = q.hint ? `<span class="hint">${esc(q.hint)}</span>` : "";
     if (q.type === "text" || q.type === "number") {
       html += `<label class="q-label" for="${q.id}">${esc(q.label)}${hint}</label>
@@ -370,38 +599,112 @@ SURVEY.forEach((sec, i) => {
 });
 
 /* ============================================================
-   PROGRESS + AUTOSAVE
+   RAW JAVOBLARNI O'QISH (ko'rinishdan qat'i nazar)
    ============================================================ */
-const totalQuestions = SURVEY.reduce((n, s) => n + s.questions.length, 0);
-document.getElementById("progressTotal").textContent = totalQuestions;
+function rawValue(q) {
+  if (q.type === "checkbox") {
+    const checked = [...form.querySelectorAll(`input[name="${q.id}"]:checked`)].map(el => el.value);
+    return checked.length ? checked : null;
+  } else if (q.type === "radio") {
+    const sel = form.querySelector(`input[name="${q.id}"]:checked`);
+    return sel ? sel.value : null;
+  } else {
+    const el = form.querySelector(`[name="${q.id}"]`);
+    return (el && el.value.trim()) ? el.value.trim() : null;
+  }
+}
 
-function collect() {
-  const data = {};
-  SURVEY.forEach(s => s.questions.forEach(q => {
-    if (q.type === "checkbox") {
-      const checked = [...form.querySelectorAll(`input[name="${q.id}"]:checked`)].map(el => el.value);
-      if (checked.length) data[q.id] = checked;
-    } else if (q.type === "radio") {
-      const sel = form.querySelector(`input[name="${q.id}"]:checked`);
-      if (sel) data[q.id] = sel.value;
+/* ============================================================
+   SHARTLI MANTIQ (BRANCHING ENGINE)
+   ============================================================ */
+function condMet(cond, visMap) {
+  // bog'liq savol o'zi ko'rinmasa -> shart bajarilmaydi (ierarxiya)
+  if (visMap[cond.q] === false) return false;
+  const v = rawValue(qById[cond.q]);
+  let result;
+  if (cond.anyOf) {
+    const arr = Array.isArray(v) ? v : (v != null ? [v] : []);
+    result = cond.anyOf.some(x => arr.includes(x));
+  } else if (cond.includes) {
+    const arr = Array.isArray(v) ? v : (v != null ? [v] : []);
+    result = arr.includes(cond.includes);
+  } else if (cond.exists) {
+    result = v != null;
+  } else {
+    result = true;
+  }
+  return cond.negate ? !result : result;
+}
+
+function computeVisibility() {
+  const visMap = {};
+  allQuestions.forEach(q => { visMap[q.id] = true; });
+  // bir necha marta aylanib, zanjirli (chained) shartlarni hisoblaymiz
+  for (let pass = 0; pass < 6; pass++) {
+    let changed = false;
+    allQuestions.forEach(q => {
+      const conds = effectiveConds(q);
+      const vis = conds.length ? conds.every(c => condMet(c, visMap)) : true;
+      if (visMap[q.id] !== vis) { visMap[q.id] = vis; changed = true; }
+    });
+    if (!changed) break;
+  }
+  return visMap;
+}
+
+function applyVisibility(visMap) {
+  // savollar
+  allQuestions.forEach(q => {
+    const el = form.querySelector(`.q[data-qid="${q.id}"]`);
+    if (el) el.classList.toggle("is-hidden", !visMap[q.id]);
+  });
+  // bo'limlar: showIf bor bo'lsa shartga qarab, aks holda ko'rinadigan savollari bo'lsa
+  SURVEY.forEach((sec, idx) => {
+    const secEl = form.querySelector(`.section[data-sec-index="${idx}"]`);
+    if (!secEl) return;
+    let secVisible;
+    if (sec.showIf) {
+      const conds = Array.isArray(sec.showIf) ? sec.showIf : [sec.showIf];
+      secVisible = conds.every(c => condMet(c, visMap));
     } else {
-      const el = form.querySelector(`[name="${q.id}"]`);
-      if (el && el.value.trim()) data[q.id] = el.value.trim();
+      secVisible = sec.questions.some(q => visMap[q.id]);
     }
-  }));
+    secEl.classList.toggle("is-hidden", !secVisible);
+  });
+  return visMap;
+}
+
+/* ============================================================
+   PROGRESS + AUTOSAVE — faqat KO'RINADIGAN savollarni hisoblaydi
+   ============================================================ */
+function collectVisible(visMap) {
+  const data = {};
+  allQuestions.forEach(q => {
+    if (!visMap[q.id]) return;
+    const v = rawValue(q);
+    if (v != null) data[q.id] = v;
+  });
   return data;
 }
 
-function answeredCount(data) {
-  return SURVEY.reduce((n, s) => n + s.questions.filter(q => data[q.id] != null).length, 0);
+function collectAll() {
+  const data = {};
+  allQuestions.forEach(q => { const v = rawValue(q); if (v != null) data[q.id] = v; });
+  return data;
 }
 
-function updateProgress() {
-  const data = collect();
-  const n = answeredCount(data);
-  document.getElementById("progressCount").textContent = n;
-  document.getElementById("progressBar").style.width = (n / totalQuestions * 100) + "%";
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+function refresh() {
+  const visMap = computeVisibility();
+  applyVisibility(visMap);
+  const visibleQs = allQuestions.filter(q => visMap[q.id]);
+  const answered = visibleQs.filter(q => rawValue(q) != null).length;
+  const total = visibleQs.length;
+  document.getElementById("progressCount").textContent = answered;
+  document.getElementById("progressTotal").textContent = total;
+  document.getElementById("progressBar").style.width = (total ? answered / total * 100 : 0) + "%";
+  // saqlash: barcha kiritilgan qiymatlar (qayta ochilsa yo'qolmasin)
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(collectAll()));
+  return visMap;
 }
 
 function restore() {
@@ -425,27 +728,24 @@ function restore() {
       }
     }
   });
-  updateProgress();
 }
 
-form.addEventListener("input", updateProgress);
-form.addEventListener("change", updateProgress);
+form.addEventListener("input", refresh);
+form.addEventListener("change", refresh);
 
 /* ============================================================
-   EXPORT
+   EXPORT — faqat ko'rinadigan (tegishli) savollarni chiqaradi
    ============================================================ */
-function labelFor(id) {
-  for (const s of SURVEY) for (const q of s.questions) if (q.id === id) return q.label;
-  return id;
-}
-
 function buildMarkdown() {
-  const data = collect();
+  const visMap = computeVisibility();
+  const data = collectVisible(visMap);
   const date = new Date().toLocaleString("uz-UZ");
-  let md = `# Retail Mobil Dastur — Discovery so'rovnomasi javoblari\n\n_To'ldirilgan: ${date}_\n\n`;
-  SURVEY.forEach((s, i) => {
-    md += `## ${i+1}. ${s.title}\n\n`;
-    s.questions.forEach(q => {
+  let md = `# Retail Mobil Dastur — Adaptiv so'rovnoma javoblari\n\n_To'ldirilgan: ${date}_\n\n`;
+  SURVEY.forEach((s) => {
+    const visibleQs = s.questions.filter(q => visMap[q.id]);
+    if (!visibleQs.length) return;
+    md += `## ${s.title}\n\n`;
+    visibleQs.forEach(q => {
       const v = data[q.id];
       const ans = v == null ? "_(javob berilmagan)_" : (Array.isArray(v) ? v.join(", ") : v);
       md += `**${q.label}**\n\n${ans}\n\n`;
@@ -466,8 +766,10 @@ function download(filename, text, type) {
 document.getElementById("btnExport").addEventListener("click", () =>
   download("retail-survey-javoblar.md", buildMarkdown(), "text/markdown;charset=utf-8"));
 
-document.getElementById("btnJson").addEventListener("click", () =>
-  download("retail-survey-javoblar.json", JSON.stringify(collect(), null, 2), "application/json"));
+document.getElementById("btnJson").addEventListener("click", () => {
+  const visMap = computeVisibility();
+  download("retail-survey-javoblar.json", JSON.stringify(collectVisible(visMap), null, 2), "application/json");
+});
 
 document.getElementById("btnPrint").addEventListener("click", () => window.print());
 
@@ -475,12 +777,12 @@ document.getElementById("btnReset").addEventListener("click", () => {
   if (confirm("Barcha javoblar o'chiriladi. Davom etamizmi?")) {
     localStorage.removeItem(STORAGE_KEY);
     form.reset();
-    updateProgress();
+    refresh();
   }
 });
 
 restore();
-updateProgress();
+refresh();
 </script>
 </body>
 </html>
