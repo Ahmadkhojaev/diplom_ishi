@@ -169,6 +169,48 @@
   .btn-ghost { background: #f1f3f9; color: var(--ink); }
   .btn-ghost:hover { background: #e6e9f2; }
 
+  /* ---- Tavsiya kartasi ---- */
+  .reco-card {
+    background: linear-gradient(180deg, #ffffff, #f6f9ff);
+    border: 1.5px solid #c7d2fe;
+    border-radius: 16px;
+    box-shadow: var(--shadow);
+    margin-bottom: 22px;
+    overflow: hidden;
+  }
+  .reco-head {
+    display: flex; align-items: center; gap: 12px;
+    padding: 18px 24px;
+    background: linear-gradient(90deg, #eef2ff, #e0f2fe);
+    border-bottom: 1px solid var(--line);
+  }
+  .reco-head .ic {
+    flex: 0 0 auto; width: 38px; height: 38px; border-radius: 10px;
+    background: var(--brand); color: #fff; display: grid; place-items: center; font-size: 18px;
+  }
+  .reco-head h2 { font-size: 18px; margin: 0; }
+  .reco-head .cnt {
+    margin-left: auto; flex: 0 0 auto; white-space: nowrap;
+    font-size: 13px; font-weight: 700; color: var(--brand-ink);
+    background: #e0e7ff; border-radius: 999px; padding: 5px 12px;
+  }
+  .reco-body { padding: 6px 24px 20px; }
+  .reco-group { margin-top: 16px; }
+  .reco-group h3 {
+    font-size: 12px; text-transform: uppercase; letter-spacing: .6px;
+    color: var(--muted); margin: 0 0 8px; font-weight: 700;
+  }
+  .reco-item {
+    display: flex; gap: 11px; align-items: flex-start;
+    padding: 11px 13px; border: 1px solid var(--line); border-radius: 10px;
+    margin-bottom: 8px; background: #fff;
+    animation: slideIn .2s ease;
+  }
+  .reco-item .dot { flex: 0 0 auto; width: 8px; height: 8px; border-radius: 50%; background: var(--brand); margin-top: 7px; }
+  .reco-item .t { font-weight: 600; font-size: 14.5px; color: var(--ink); }
+  .reco-item .w { font-size: 13px; color: var(--muted); margin-top: 2px; }
+  .reco-empty { color: var(--muted); font-size: 14px; padding: 14px 0; }
+
   .save-note { text-align: center; font-size: 12.5px; color: #c3cbe0; padding: 0 20px 30px; }
 
   @media print {
@@ -199,6 +241,15 @@
 
 <main>
   <form id="surveyForm"></form>
+
+  <section class="reco-card" id="recoCard">
+    <div class="reco-head">
+      <div class="ic">💡</div>
+      <h2>Avtomatik tavsiya — sizga qaysi modullar kerak bo'ladi</h2>
+      <span class="cnt"><span id="recoCount">0</span> ta modul</span>
+    </div>
+    <div class="reco-body" id="recoBody"></div>
+  </section>
   <p class="save-note">Javoblaringiz brauzeringizda avtomatik saqlanadi (localStorage). Tugatgach pastdagi tugmalar orqali yuklab oling.</p>
 </main>
 
@@ -693,6 +744,192 @@ function collectAll() {
   return data;
 }
 
+/* ============================================================
+   AVTOMATIK TAVSIYA (RECOMMENDATION ENGINE)
+   Tanlovlarga qarab tavsiya etiladigan modullar ro'yxati.
+   Har bir qoida: { group, title, why, when(helpers) -> boolean }
+   helpers: eq(id,val) | inc(id,val) | ans(id) | data
+   ============================================================ */
+const RECO_GROUPS = ["Asosiy modullar", "Sohaga oid modullar", "Integratsiyalar", "Platforma va boshqalar"];
+
+const RULES = [
+  /* ---- Asosiy modullar ---- */
+  { group:"Asosiy modullar", title:"Mahsulot katalogi va qidiruv",
+    why:"Har qanday retail ilovaning poydevori — mahsulotlar bazasi, kategoriyalar va qidiruv.",
+    when:({ans,inc})=> ans("retail_type") || inc("feat_customer","Mahsulot katalogi va qidiruv") },
+  { group:"Asosiy modullar", title:"Ombor / inventarizatsiya moduli",
+    why:"Qoldiqlarni real vaqtda kuzatish, kirim-chiqim va inventarizatsiya nazorati.",
+    when:({inc,eq})=> inc("feat_staff","Inventarizatsiya / ombor boshqaruvi") || inc("feat_staff","Narx va qoldiqlarni real vaqtda ko'rish") || inc("feat_staff","Mahsulot qabul qilish (priyomka)") || eq("food_lot","Ha") },
+  { group:"Asosiy modullar", title:"Savat va onlayn buyurtma",
+    why:"Mijoz mahsulot tanlab, buyurtmani ilovadan rasmiylashtira oladi.",
+    when:({inc})=> inc("feat_customer","Savat va onlayn buyurtma") },
+  { group:"Asosiy modullar", title:"To'lov integratsiyasi (Payme / Click / karta)",
+    why:"Onlayn to'lovni qabul qilish uchun to'lov shlyuzlari ulanadi.",
+    when:({inc,ans})=> inc("feat_customer","Onlayn to'lov") || ans("payment_providers") },
+  { group:"Asosiy modullar", title:"Loyalty / bonus moduli",
+    why:"Mijozlarni ushlab turish: bonus ballar, chegirma va daraja tizimi.",
+    when:({inc,eq})=> inc("feat_customer","Loyalty / bonus / chegirma") || eq("main_goal","Mijozlarni ushlab turish (loyalty)") },
+  { group:"Asosiy modullar", title:"Push bildirishnoma va aksiyalar",
+    why:"Mijozni qaytarish va aksiyalarni yetkazish uchun push xabarnoma.",
+    when:({inc})=> inc("feat_customer","Push bildirishnoma va aksiyalar") },
+  { group:"Asosiy modullar", title:"Mahsulot sharhlari va reyting",
+    why:"Mijozlar fikri ishonchni oshiradi va sotuvga ijobiy ta'sir qiladi.",
+    when:({inc})=> inc("feat_customer","Mahsulot sharhlari va reyting") },
+  { group:"Asosiy modullar", title:"Yetkazib berish / logistika moduli",
+    why:"Buyurtmalarni yetkazish, kuryer va olib ketish punktlarini boshqarish.",
+    when:({inc,eq})=> inc("feat_customer","Yetkazib berish / olib ketish") || eq("food_delivery","Ha — asosiy xususiyat") || inc("constr_features","Yetkazib berish logistikasi") || inc("furn_features","Katta hajmli yetkazib berish") },
+  { group:"Asosiy modullar", title:"Boshqaruv paneli (admin / backend)",
+    why:"Mahsulot, narx, buyurtma va kontentni boshqarish uchun veb-panel.",
+    when:({eq,inc})=> eq("admin_panel","Ha") || inc("audience","Hodimlar / ichki foydalanish (B2E)") },
+  { group:"Asosiy modullar", title:"Hisobot va analitika (dashboard)",
+    why:"Sotuv, qoldiq va KPI ko'rsatkichlarini real vaqtda kuzatish.",
+    when:({inc})=> inc("feat_staff","Hisobotlar va dashboard") || inc("feat_staff","Sotuv rejasi va KPI kuzatuvi") || inc("employee_roles","Yuqori rahbariyat") },
+  { group:"Asosiy modullar", title:"HR / smena / davomat moduli",
+    why:"100+ hodim uchun smena jadvali, davomat va vazifalar boshqaruvi.",
+    when:({inc,ans})=> inc("feat_staff","Smena, davomat va vazifalar (HR)") || ans("feat_hr") || inc("employee_roles","HR / buxgalteriya") },
+  { group:"Asosiy modullar", title:"Ichki chat / e'lonlar moduli",
+    why:"Hodimlar o'rtasida muloqot va rahbariyat e'lonlari uchun.",
+    when:({inc})=> inc("feat_staff","Ichki chat / e'lonlar") },
+
+  /* ---- Sohaga oid modullar ---- */
+  { group:"Sohaga oid modullar", title:"Yaroqlilik muddati (срок) nazorati",
+    why:"Muddati o'tayotgan mahsulotlar bo'yicha avtomatik ogohlantirish va hisobot.",
+    when:({eq})=> eq("food_expiry","Juda muhim — avtomatik ogohlantirish kerak") || eq("food_lot","Ha") },
+  { group:"Sohaga oid modullar", title:"Sovuq zanjir / temperatura monitoringi",
+    why:"Tez buziladigan va muzlatilgan mahsulotlar uchun harorat nazorati.",
+    when:({eq})=> eq("food_coldchain","Ha — temperatura monitoringi kerak") || eq("food_coldchain2","Ha — temperatura monitoringi kerak") },
+  { group:"Sohaga oid modullar", title:"Tarozi / shtrix-kod integratsiyasi",
+    why:"Vazn bo'yicha sotiladigan mahsulotlar uchun tarozi bilan bog'lanish.",
+    when:({eq})=> eq("food_scale","Ha") },
+  { group:"Sohaga oid modullar", title:"Express yetkazib berish (1-2 soat)",
+    why:"Tez yetkazish uchun kuryer logistikasi va vaqt oynalari.",
+    when:({eq})=> eq("food_delivery","Ha — asosiy xususiyat") },
+  { group:"Sohaga oid modullar", title:"Variant (SKU matritsa) boshqaruvi",
+    why:"O'lcham va rang bo'yicha alohida qoldiq hisobi (S/M/L × ranglar).",
+    when:({eq})=> eq("fashion_variants","Ha — har bir variant alohida qoldiq") },
+  { group:"Sohaga oid modullar", title:"Qaytarish / almashtirish moduli",
+    why:"Onlayn qaytarish so'rovlari va pul qaytarish jarayonini boshqarish.",
+    when:({inc})=> inc("fashion_features","Onlayn qaytarish / almashtirish") },
+  { group:"Sohaga oid modullar", title:"Stil tavsiyasi / lookbook",
+    why:"Kombinatsiyalar va uslub bo'yicha tavsiyalar bilan o'rtacha chekni oshirish.",
+    when:({inc})=> inc("fashion_features","Stil bo'yicha tavsiya") || inc("fashion_features","Lookbook / kombinatsiyalar") },
+  { group:"Sohaga oid modullar", title:"Seriya raqami / IMEI kuzatuvi",
+    why:"Har bir qurilmani noyob raqami bo'yicha hisobga olish.",
+    when:({inc})=> inc("elec_features","Seriya raqami / IMEI kuzatuvi") },
+  { group:"Sohaga oid modullar", title:"Kafolat boshqaruvi moduli",
+    why:"Kafolat muddati, servis markazlari va kafolat tarixini kuzatish.",
+    when:({inc})=> inc("elec_features","Kafolat boshqaruvi") },
+  { group:"Sohaga oid modullar", title:"Muddatli to'lov / kredit integratsiyasi",
+    why:"Uzum Nasiya, Alif, Anor kabi hamkorlar bilan rassrochka.",
+    when:({inc})=> inc("elec_features","Muddatli to'lov / kredit") },
+  { group:"Sohaga oid modullar", title:"Trade-in (eski qurilma) moduli",
+    why:"Eski qurilmani baholash va yangisiga almashtirish jarayoni.",
+    when:({inc})=> inc("elec_features","Trade-in (eski qurilmani topshirish)") },
+  { group:"Sohaga oid modullar", title:"Texnik xususiyatlarni taqqoslash",
+    why:"Mahsulotlarni parametrlar bo'yicha yonma-yon solishtirish.",
+    when:({inc})=> inc("elec_features","Texnik xususiyatlarni taqqoslash") },
+  { group:"Sohaga oid modullar", title:"Retsept (recept) boshqaruvi",
+    why:"Retsept asosida dori berish, tasdiqlash va hisobini yuritish.",
+    when:({inc})=> inc("pharm_features","Retsept (recept) boshqaruvi") },
+  { group:"Sohaga oid modullar", title:"Partiya / muddat nazorati (dorixona)",
+    why:"Dori partiyalari va yaroqlilik muddatini qat'iy kuzatish.",
+    when:({inc})=> inc("pharm_features","Muddati va partiya nazorati") },
+  { group:"Sohaga oid modullar", title:"Dori o'zaro ta'siri ogohlantirishi",
+    why:"Birga ishlatib bo'lmaydigan dorilar bo'yicha avtomatik ogohlantirish.",
+    when:({inc})=> inc("pharm_features","Dori o'zaro ta'siri ogohlantirishi") },
+  { group:"Sohaga oid modullar", title:"3D / AR orqali ko'rish",
+    why:"Mebelni xonada AR yordamida joylashtirib ko'rish imkoniyati.",
+    when:({inc})=> inc("furn_features","3D / AR orqali ko'rish") },
+  { group:"Sohaga oid modullar", title:"Montaj / yetkazib berish jadvali",
+    why:"Katta hajmli yetkazish va montaj xizmatini rejalashtirish.",
+    when:({inc})=> inc("furn_features","Montaj / yig'ish xizmati") || inc("furn_features","Katta hajmli yetkazib berish") },
+  { group:"Sohaga oid modullar", title:"Custom buyurtma konfiguratori",
+    why:"O'lcham/material tanlab, narxni avtomatik hisoblovchi konfigurator.",
+    when:({inc})=> inc("furn_features","Buyurtmaga tayyorlash (custom o'lcham)") },
+  { group:"Sohaga oid modullar", title:"B2B narx darajalari moduli",
+    why:"Mijoz turiga qarab chakana / ulgurji / quruvchi narxlari.",
+    when:({inc})=> inc("constr_features","Ulgurji (B2B) narxlash") },
+  { group:"Sohaga oid modullar", title:"Material kalkulyatori",
+    why:"Loyiha hajmi bo'yicha kerakli material miqdorini hisoblash.",
+    when:({inc})=> inc("constr_features","Loyiha bo'yicha material kalkulyatori") },
+  { group:"Sohaga oid modullar", title:"Hajmiy birliklar (m² / m³ / tonna)",
+    why:"Mahsulotni turli o'lchov birliklarida sotish va hisoblash.",
+    when:({inc})=> inc("constr_features","Hajmiy birliklar (m2 / m3 / tonna)") },
+
+  /* ---- Integratsiyalar ---- */
+  { group:"Integratsiyalar", title:"1C / MoySklad integratsiyasi",
+    why:"Mavjud buxgalteriya/ombor tizimi bilan ma'lumotlarni sinxronlash.",
+    when:({inc})=> inc("current_systems","1C") || inc("current_systems","MoySklad") },
+  { group:"Integratsiyalar", title:"POS / kassa integratsiyasi",
+    why:"Kassa tizimi bilan sotuv va qoldiqlarni bog'lash.",
+    when:({inc})=> inc("current_systems","POS / kassa tizimi") },
+  { group:"Integratsiyalar", title:"ERP / CRM integratsiyasi",
+    why:"Korxona resurslari yoki mijozlar bazasi tizimi bilan bog'lanish.",
+    when:({inc})=> inc("current_systems","ERP") || inc("current_systems","CRM") },
+  { group:"Integratsiyalar", title:"Ma'lumotlarni ko'chirish (migratsiya)",
+    why:"Excel yoki qo'lda yuritilgan ma'lumotlarni yangi bazaga o'tkazish.",
+    when:({eq,inc})=> eq("data_ready","Qisman (Excel va h.k.)") || inc("current_systems","Excel / qo'lda") },
+
+  /* ---- Platforma va boshqalar ---- */
+  { group:"Platforma va boshqalar", title:"Android va iOS uchun mobil ilova",
+    why:"Asosiy maqsadli platformalar uchun native yoki cross-platform ilova.",
+    when:({inc,data})=> inc("platforms","Hammasi") || (Array.isArray(data.platforms) && data.platforms.length>0) },
+  { group:"Platforma va boshqalar", title:"Oflayn rejim (offline-first)",
+    why:"Internetsiz ham ishlash va keyin sinxronlash imkoniyati.",
+    when:({eq})=> eq("offline","Ha, majburiy") },
+  { group:"Platforma va boshqalar", title:"Ko'p tillilik (i18n)",
+    why:"Bir nechta tilni qo'llab-quvvatlash va til almashtirish.",
+    when:({data})=> Array.isArray(data.languages) && data.languages.length>1 },
+  { group:"Platforma va boshqalar", title:"Bosqichli (MVP) yondashuv",
+    why:"Avval asosiy modullarni ishga tushirib, qolganini keyingi fazaga rejalashtirish.",
+    when:({eq})=> eq("scope","MVP — avval asosiy versiya, keyin kengaytiramiz") },
+];
+
+function recommend(data) {
+  const eq  = (id, v) => data[id] === v;
+  const inc = (id, v) => { const x = data[id]; return Array.isArray(x) ? x.includes(v) : x === v; };
+  const ans = (id) => data[id] != null;
+  return RULES.filter(r => { try { return r.when({ eq, inc, ans, data }); } catch (e) { return false; } });
+}
+
+function renderReco(visMap) {
+  const data = collectVisible(visMap);
+  const recos = recommend(data);
+  document.getElementById("recoCount").textContent = recos.length;
+  const body = document.getElementById("recoBody");
+  if (!recos.length) {
+    body.innerHTML = `<div class="reco-empty">Savollarga javob bera boshlang — sizga mos modullar shu yerda avtomatik paydo bo'ladi.</div>`;
+    return;
+  }
+  let html = "";
+  RECO_GROUPS.forEach(g => {
+    const items = recos.filter(r => r.group === g);
+    if (!items.length) return;
+    html += `<div class="reco-group"><h3>${esc(g)}</h3>`;
+    items.forEach(r => {
+      html += `<div class="reco-item"><div class="dot"></div><div><div class="t">${esc(r.title)}</div><div class="w">${esc(r.why)}</div></div></div>`;
+    });
+    html += `</div>`;
+  });
+  body.innerHTML = html;
+}
+
+function buildRecoMarkdown() {
+  const visMap = computeVisibility();
+  const data = collectVisible(visMap);
+  const recos = recommend(data);
+  if (!recos.length) return "";
+  let md = `## Avtomatik tavsiya — tavsiya etilgan modullar\n\n`;
+  RECO_GROUPS.forEach(g => {
+    const items = recos.filter(r => r.group === g);
+    if (!items.length) return;
+    md += `### ${g}\n\n`;
+    items.forEach(r => { md += `- **${r.title}** — ${r.why}\n`; });
+    md += `\n`;
+  });
+  return md;
+}
+
 function refresh() {
   const visMap = computeVisibility();
   applyVisibility(visMap);
@@ -702,6 +939,7 @@ function refresh() {
   document.getElementById("progressCount").textContent = answered;
   document.getElementById("progressTotal").textContent = total;
   document.getElementById("progressBar").style.width = (total ? answered / total * 100 : 0) + "%";
+  renderReco(visMap);
   // saqlash: barcha kiritilgan qiymatlar (qayta ochilsa yo'qolmasin)
   localStorage.setItem(STORAGE_KEY, JSON.stringify(collectAll()));
   return visMap;
@@ -751,6 +989,8 @@ function buildMarkdown() {
       md += `**${q.label}**\n\n${ans}\n\n`;
     });
   });
+  const reco = buildRecoMarkdown();
+  if (reco) md += `---\n\n` + reco;
   return md;
 }
 
